@@ -1,0 +1,161 @@
+{% extends 'donations/base.html' %}
+
+{% block title %}إنشاء مشروع جديد - سند{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 750px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #edf2f7;
+    }
+    .form-header {
+        margin-bottom: 25px;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 15px;
+    }
+    .form-header h2 {
+        margin: 0 0 6px 0;
+        color: #2d3748;
+    }
+    .form-header p {
+        margin: 0;
+        color: #718096;
+        font-size: 14px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-row {
+        display: flex;
+        gap: 20px;
+    }
+    .form-col {
+        flex: 1;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 14px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+        outline: none;
+    }
+    .form-control:focus {
+        border-color: #3182ce;
+    }
+    .help-text {
+        font-size: 12px;
+        color: #a0aec0;
+        margin-top: 4px;
+        display: block;
+    }
+    .btn-create {
+        width: 100%;
+        padding: 14px;
+        background: #27ae60;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    .btn-create:hover {
+        background: #219150;
+    }
+    .msg-box {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .msg-err { background: #fed7d7; color: #9b2c2c; }
+    .msg-ok { background: #c6f6d5; color: #22543d; }
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>إطلاق حملة تمويل جديدة</h2>
+        <p>املأ التفاصيل التالية لإطلاق حملتك واستقبال التبرعات</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="msg-box {% if message.tags == 'error' %}msg-err{% else %}msg-ok{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'create_project' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">عنوان المشروع</label>
+            <input type="text" name="title" required class="form-control" placeholder="مثال: تجهيز معمل حاسوب لطلاب قرية...">
+        </div>
+
+        <div class="form-row">
+            <div class="form-col form-group">
+                <label class="form-label">التصنيف</label>
+                <select name="category" required class="form-control">
+                    <option value="" disabled selected>اختر التصنيف...</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-col form-group">
+                <label class="form-label">المبلغ المطلوب (الهدف بالجنيه)</label>
+                <input type="number" name="total_target" min="100" step="50" required class="form-control" placeholder="مثال: 50000">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">تفاصيل الحملة</label>
+            <textarea name="details" rows="5" required class="form-control" placeholder="اشرح قصة المشروع والهدف منه بالتفصيل..."></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-col form-group">
+                <label class="form-label">تاريخ ووقت البداية</label>
+                <input type="datetime-local" name="start_time" required class="form-control">
+            </div>
+            <div class="form-col form-group">
+                <label class="form-label">تاريخ ووقت النهاية</label>
+                <input type="datetime-local" name="end_time" required class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">وسوم المشروع (Tags)</label>
+            <input type="text" name="tags" class="form-control" placeholder="تعليم, أيتام, مصر, صحة">
+            <span class="help-text">افصل بين كل وسم والآخر بفاصلة (,)</span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">صور المشروع (يمكنك اختيار أكثر من صورة)</label>
+            <input type="file" name="images" multiple accept="image/*" class="form-control">
+            <span class="help-text">حدد صورة أو عدة صور معاً لتظهر داخل سلايدر المشروع</span>
+        </div>
+
+        <button type="submit" class="btn-create">
+            نشر الحملة الآن
+        </button>
+    </form>
+</div>
+{% endblock %}

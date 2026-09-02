@@ -1,0 +1,382 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}الرئيسية - منصة سند لدعم المشاريع{% endblock %}
+
+{% block content %}
+<style>
+    .home-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .hero-search {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 50px 20px;
+        border-radius: 16px;
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .hero-search h1 {
+        margin: 0 0 15px 0;
+        font-size: 32px;
+    }
+    .search-form {
+        max-width: 600px;
+        margin: 20px auto 0;
+        display: flex;
+        gap: 10px;
+    }
+    .search-input {
+        flex: 1;
+        padding: 14px 18px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+        outline: none;
+    }
+    .search-btn {
+        padding: 14px 28px;
+        background: #27ae60;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .slider-section {
+        margin-bottom: 45px;
+    }
+    .slider-container {
+        position: relative;
+        height: 380px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #111111;
+    }
+    .top-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+        display: flex;
+        align-items: flex-end;
+    }
+    .top-slide.active {
+        opacity: 1;
+        z-index: 2;
+    }
+    .slide-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6;
+    }
+    .slide-overlay {
+        position: relative;
+        z-index: 3;
+        padding: 30px;
+        background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+        width: 100%;
+        color: #ffffff;
+    }
+    .slide-badge {
+        background: #e67e22;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .slide-title {
+        margin: 8px 0 6px 0;
+        font-size: 24px;
+    }
+    .slide-desc {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    .slide-link {
+        display: inline-block;
+        padding: 8px 20px;
+        background: #27ae60;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .slide-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        background: rgba(255,255,255,0.3);
+        border: none;
+        color: #ffffff;
+        padding: 12px 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+    }
+    .slide-prev { left: 20px; }
+    .slide-next { right: 20px; }
+
+    .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 10px;
+    }
+    .section-title h2 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 22px;
+    }
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+        margin-bottom: 45px;
+    }
+    .project-card {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    .card-img-wrap {
+        height: 160px;
+        width: 100%;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+    .card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .card-img-placeholder {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+    }
+    .card-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .card-category {
+        font-size: 12px;
+        color: #3182ce;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    .card-title {
+        font-size: 16px;
+        margin: 0 0 10px 0;
+        color: #2d3748;
+        line-height: 1.4;
+    }
+    .project-progress {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 12px 0 8px 0;
+        appearance: none;
+    }
+    .project-progress::-webkit-progress-bar {
+        background-color: #edf2f7;
+    }
+    .project-progress::-webkit-progress-value {
+        background-color: #38a169;
+    }
+    .project-progress::-moz-progress-bar {
+        background-color: #38a169;
+    }
+    .card-footer-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #718096;
+    }
+
+    .cats-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 50px;
+    }
+    .cat-chip {
+        padding: 10px 20px;
+        background: #edf2f7;
+        color: #2d3748;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease;
+    }
+    .cat-chip:hover {
+        background: #cbd5e0;
+    }
+    .no-data {
+        color: #888888;
+    }
+</style>
+
+<div class="home-wrapper">
+
+    <!-- 1. صندوق البحث -->
+    <div class="hero-search">
+        <h1>معاً ندعم الأحلام والمشاريع في مصر</h1>
+        <p>ابحث عن المشاريع بالاسم أو بالوسوم (#تعليم، #علاج، #مصر)</p>
+        <form class="search-form" method="GET" action="{% url 'search' %}">
+            <input type="text" name="q" class="search-input" placeholder="اكتب اسم المشروع أو الوسم..." required>
+            <button type="submit" class="search-btn">بحث</button>
+        </form>
+    </div>
+
+    <!-- 2. سلايدر أعلى 5 مشاريع تقييماً -->
+    {% if running_projects %}
+        <div class="slider-section">
+            <div class="section-title">
+                <h2>⭐ أعلى المشاريع تقييماً (سارية للتبرع)</h2>
+            </div>
+            <div class="slider-container" id="topProjectsSlider">
+                {% for proj in running_projects %}
+                    <div class="top-slide {% if forloop.first %}active{% endif %}">
+                        {% if proj.images.first %}
+                            <img src="{{ proj.images.first.image.url }}" class="slide-bg" alt="{{ proj.title }}">
+                        {% else %}
+                            <div class="slide-bg" style="background:#2d3748;"></div>
+                        {% endif %}
+                        <div class="slide-overlay">
+                            <span class="slide-badge">تقييم ⭐ {{ proj.average_rating }} / 5</span>
+                            <h2 class="slide-title">{{ proj.title }}</h2>
+                            <p class="slide-desc">الهدف: {{ proj.total_target }} ج.م | تم جمع: {{ proj.current_donations }} ج.م</p>
+                            <a href="{% url 'project_detail' proj.id %}" class="slide-link">تبرع لهذا المشروع</a>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% if running_projects.count > 1 %}
+                    <button type="button" class="slide-nav slide-prev" onclick="prevHeroSlide()">&#10094;</button>
+                    <button type="button" class="slide-nav slide-next" onclick="nextHeroSlide()">&#10095;</button>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 3. التصنيفات -->
+    <div class="section-title">
+        <h2>التصنيفات المتاحة</h2>
+    </div>
+    <div class="cats-container">
+        {% for cat in categories %}
+            <a href="{% url 'category_projects' cat.id %}" class="cat-chip">{{ cat.name }}</a>
+        {% empty %}
+            <p class="no-data">لا توجد تصنيفات بعد.</p>
+        {% endfor %}
+    </div>
+
+    <!-- 4. المشاريع المميزة Featured -->
+    {% if featured_projects %}
+        <div class="section-title">
+            <h2>✨ مشاريع مميزة يوصي بها فريق العمل</h2>
+        </div>
+        <div class="cards-grid">
+            {% for p in featured_projects %}
+                <a href="{% url 'project_detail' p.id %}" class="project-card">
+                    <div class="card-img-wrap">
+                        {% if p.images.first %}
+                            <img src="{{ p.images.first.image.url }}" class="card-img" alt="{{ p.title }}">
+                        {% else %}
+                            <div class="card-img-placeholder">بدون صورة</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <span class="card-category">{{ p.category.name }}</span>
+                        <h3 class="card-title">{{ p.title }}</h3>
+                        <progress class="project-progress" value="{{ p.donation_percentage }}" max="100"></progress>
+                        <div class="card-footer-info">
+                            <span>جمع: {{ p.current_donations }} ج.م</span>
+                            <span>الهدف: {{ p.total_target }} ج.م</span>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- 5. أحدث المشاريع Latest -->
+    <div class="section-title" id="Projects" style="scroll-margin-top: 80px;">
+        <h2>🕒 أحدث المشاريع المضافة</h2>
+    </div>
+    <div class="cards-grid">
+        {% for p in latest_projects %}
+            <a href="{% url 'project_detail' p.id %}" class="project-card">
+                <div class="card-img-wrap">
+                    {% if p.images.first %}
+                        <img src="{{ p.images.first.image.url }}" class="card-img" alt="{{ p.title }}">
+                    {% else %}
+                        <div class="card-img-placeholder">بدون صورة</div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <span class="card-category">{{ p.category.name }}</span>
+                    <h3 class="card-title">{{ p.title }}</h3>
+                    <progress class="project-progress" value="{{ p.donation_percentage }}" max="100"></progress>
+                    <div class="card-footer-info">
+                        <span>جمع: {{ p.current_donations }} ج.م</span>
+                        <span>الهدف: {{ p.total_target }} ج.م</span>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <p class="no-data">لا توجد مشاريع مضافة حالياً.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+    let heroIndex = 0;
+    const heroSlides = document.querySelectorAll('.top-slide');
+
+    function showHeroSlide(idx) {
+        if (!heroSlides.length) return;
+        if (idx >= heroSlides.length) heroIndex = 0;
+        else if (idx < 0) heroIndex = heroSlides.length - 1;
+        else heroIndex = idx;
+
+        heroSlides.forEach(s => s.classList.remove('active'));
+        heroSlides[heroIndex].classList.add('active');
+    }
+
+    function nextHeroSlide() { showHeroSlide(heroIndex + 1); }
+    function prevHeroSlide() { showHeroSlide(heroIndex - 1); }
+
+    if (heroSlides.length > 1) {
+        setInterval(nextHeroSlide, 5000);
+    }
+</script>
+{% endblock %}

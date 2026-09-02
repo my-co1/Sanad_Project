@@ -1,0 +1,47 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Search Results - Sanad{% endblock %}
+
+{% block content %}
+<main class="container" style="padding: 40px 15px; min-height: 60vh;">
+        <h2>Search Results for: "<span style="color: #007bff;">{{ query }}</span>"</h2>
+        
+        <div class="projects-grid" style="margin-top: 25px;">
+            {% for project in projects %}
+                <div class="project-card">
+                    {% with image=project.images.first %}
+                        {% if image %}
+                            <a href="{% url 'project_detail' project.id %}">
+                                <img src="{{ image.image.url }}" alt="{{ project.title }}" class="project-image">
+                            </a>
+                        {% endif %}
+                    {% endwith %}
+                    <div class="project-content">
+                        <h3>{{ project.title }}</h3>
+                        <p>{{ project.details|truncatewords:15 }}</p>
+                        <p><strong>Target:</strong> {{ project.target }} EGP</p>
+                        <p><strong>Collected:</strong> {{ project.collected }} EGP</p>
+                        <p><strong>Category:</strong> {{ project.category.name }}</p>
+                        
+                        {% if project.tags.all %}
+                            <div class="project-tags" style="margin: 10px 0;">
+                                {% for tag in project.tags.all %}
+                                    <span class="project-tag">#{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <a href="{% url 'project_detail' project.id %}" class="btn btn-primary" style="margin-top: 10px; display: inline-block;">View Project</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p style="margin-top: 20px;">No projects found matching "{{ query }}".</p>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </main>
+{% endblock %}

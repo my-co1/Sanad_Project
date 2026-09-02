@@ -1,0 +1,80 @@
+{% extends 'donations/base.html' %}
+
+{% block title %}User Dashboard - Sanad{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-grid">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar">
+            <div class="user-profile-header">
+                <!-- عرض أول حرفين من اسم المستخدم ديناميكياً أو صورة افتراضية -->
+                <div class="user-avatar-lg" style="background: var(--accent-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-weight: 800; font-size: 2rem; color: #0b0c10;">
+                    {{ request.user.username|slice:":2|upper" }}
+                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 700;">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                <p style="font-size: 0.8rem; color: var(--accent-emerald);">New Member</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Egypt</p>
+            </div>
+
+            <nav class="dash-nav">
+                <a href="#" class="dash-nav-item active">Dashboard</a>
+                <a href="#" class="dash-nav-item">My Donations</a>
+                <a href="{% url 'create_project' %}" class="dash-nav-item">Launch Campaign</a>
+                <a href="#" class="dash-nav-item">Edit Profile</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Stats Row (صف الإحصائيات بقيم صفرية لليوزر الجديد) -->
+            <div class="dash-stats-row">
+                <div class="dash-stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">MY CAMPAIGNS</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--accent-purple); margin-top: 6px;">0</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">No campaigns launched yet</div>
+                </div>
+
+                <div class="dash-stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">TOTAL DONATED</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--accent-blue); margin-top: 6px;">0 <span style="font-size: 1rem;">EGP</span></div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Across 0 projects</div>
+                </div>
+
+                <div class="dash-stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">CONTACT INFO</div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary); margin-top: 8px;">{{ request.user.email }}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Not provided</div>
+                </div>
+            </div>
+
+            <!-- Projects Section Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.3rem; font-weight: 800;">My Projects</h3>
+                <a href="{% url 'create_project' %}" class="btn btn-primary" style="padding: 8px 18px; font-size: 0.8rem;">+ New Campaign</a>
+            </div>
+
+            <!-- حالة عدم وجود مشاريع (Empty State) -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 40px; text-align: center;">
+                <div style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px;">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">No campaigns yet</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">You haven't launched any fundraising campaigns. Start your first campaign today!</p>
+                <a href="{% url 'create_project' %}" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.9rem;">Launch Campaign Now</a>
+            </div>
+
+            <!-- Danger Zone (Delete Account) -->
+            <div class="danger-zone-card">
+                <h4 style="color: #ef4444; font-size: 1.1rem; font-weight: 700;">Danger Zone</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0 16px;">Delete your account. Once deleted, there is no going back. Please enter your password to confirm.</p>
+                <form style="display: flex; gap: 12px; max-width: 450px;">
+                    {% csrf_token %}
+                    <input type="password" class="form-control" placeholder="Enter password to confirm" required>
+                    <button type="submit" class="btn" style="background: #ef4444; color: #fff; white-space: nowrap;">Delete Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

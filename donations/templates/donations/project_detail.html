@@ -1,0 +1,364 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - سند{% endblock %}
+
+{% block content %}
+<style>
+    .project-container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 20px;
+    }
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .badge-status {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    .badge-cancelled { background: #e74c3c; }
+    .badge-expired { background: #7f8c8d; }
+    .badge-active { background: #27ae60; }
+
+    .project-slider {
+        position: relative;
+        width: 100%;
+        max-height: 450px;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #000;
+        margin-bottom: 25px;
+    }
+    .slider-img {
+        width: 100%;
+        height: 450px;
+        object-fit: cover;
+        display: none;
+    }
+    .slider-img.active {
+        display: block;
+    }
+    .slider-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        color: #ffffff;
+        border: none;
+        padding: 12px 18px;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+    .slider-prev { left: 15px; }
+    .slider-next { right: 15px; }
+
+    .stats-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
+    }
+    .progress-bar-container {
+        width: 100%;
+        height: 14px;
+        background: #e9ecef;
+        border-radius: 7px;
+        overflow: hidden;
+        margin: 12px 0;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #27ae60;
+        transition: width 0.4s ease;
+    }
+    .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+    .similar-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .similar-card img {
+        width: 100%;
+        height: 130px;
+        object-fit: cover;
+    }
+    .comment-box {
+        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+    }
+    .reply-box {
+        margin-right: 30px;
+        padding: 8px 12px;
+        background: #fdfdfd;
+        border-right: 3px solid #3498db;
+        margin-top: 8px;
+    }
+    .msg-box {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .msg-err { background: #f8d7da; color: #721c24; }
+    .msg-ok { background: #d4edda; color: #155724; }
+    .reply-form-wrapper {
+        display: none;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="project-container">
+
+    {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div class="msg-box {% if message.tags == 'error' %}msg-err{% else %}msg-ok{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="project-header">
+        <div>
+            <h1 style="margin: 0 0 10px 0;">{{ project.title }}</h1>
+            <p style="color: #666; margin: 0;">
+                التصنيف: <strong>{{ project.category.name }}</strong> | الناشر: <strong>{{ project.user.first_name }} {{ project.user.last_name }}</strong>
+            </p>
+        </div>
+        <div>
+            {% if project.is_cancelled %}
+                <span class="badge-status badge-cancelled">تم إلغاء المشروع</span>
+            {% elif not project.is_running %}
+                <span class="badge-status badge-expired">منتهي</span>
+            {% else %}
+                <span class="badge-status badge-active">سارٍ للتبرع</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- السلايدر -->
+    <div class="project-slider" id="projectSlider">
+        {% if project.images.all %}
+            {% for img in project.images.all %}
+                <img src="{{ img.image.url }}" class="slider-img {% if forloop.first %}active{% endif %}" alt="صورة المشروع">
+            {% endfor %}
+            {% if project.images.count > 1 %}
+                <button type="button" class="slider-btn slider-prev" onclick="prevSlide()">&#10094;</button>
+                <button type="button" class="slider-btn slider-next" onclick="nextSlide()">&#10095;</button>
+            {% endif %}
+        {% else %}
+            <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #eee; color: #888;">
+                لا توجد صور مرفقة للمشروع
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- الإحصائيات والتبرع -->
+    <div class="stats-card">
+        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold;">
+            <span>تم جمع: {{ project.current_donations }} ج.م</span>
+            <span>الهدف: {{ project.total_target }} ج.م</span>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-fill" id="donationBar"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: #666; font-size: 14px;">
+            <span>النسبة المكتملة: {{ project.donation_percentage }}%</span>
+            <span>متوسط التقييم العام: ⭐ {{ project.average_rating }} / 5</span>
+        </div>
+
+        {% if project.is_running and not project.is_cancelled %}
+            <form method="POST" action="{% url 'donate' project.id %}" style="display: flex; gap: 10px; margin-top: 15px;">
+                {% csrf_token %}
+                <input type="number" name="amount" min="5" step="5" placeholder="أدخل مبلغ التبرع بالجنيه..." required style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                <button type="submit" style="padding: 10px 25px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    تبرع الآن
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- التفاصيل والوسوم -->
+    <div style="margin-bottom: 30px;">
+        <h3>عن الحملة</h3>
+        <p style="line-height: 1.8; color: #333; font-size: 16px;">{{ project.details }}</p>
+        
+        <div style="margin-top: 15px;">
+            <strong>الوسوم: </strong>
+            {% for tag in project.tags.all %}
+                <span style="display: inline-block; background: #eef2f7; color: #2980b9; padding: 4px 10px; border-radius: 12px; font-size: 13px; margin-left: 5px;">#{{ tag.name }}</span>
+            {% empty %}
+                <span style="color: #888;">لا توجد وسوم</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- التقييم والإلغاء والإبلاغ -->
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 30px;">
+        <form method="POST" action="{% url 'rate_project' project.id %}" style="display: flex; align-items: center; gap: 8px;">
+            {% csrf_token %}
+            <span><strong>قيّم المشروع:</strong></span>
+            <select name="rating" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="5" {% if user_rating == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4" {% if user_rating == 4 %}selected{% endif %}>⭐⭐⭐⭐ (4)</option>
+                <option value="3" {% if user_rating == 3 %}selected{% endif %}>⭐⭐⭐ (3)</option>
+                <option value="2" {% if user_rating == 2 %}selected{% endif %}>⭐⭐ (2)</option>
+                <option value="1" {% if user_rating == 1 %}selected{% endif %}>⭐ (1)</option>
+            </select>
+            <button type="submit" style="padding: 6px 12px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer;">تقييم</button>
+        </form>
+
+        <div style="display: flex; gap: 10px;">
+            {% if request.user == project.user and project.can_be_cancelled %}
+                <form method="POST" action="{% url 'cancel_project' project.id %}" onsubmit="return confirm('هل أنت متأكد من إلغاء المشروع نهائياً؟');">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 8px 14px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">إلغاء المشروع</button>
+                </form>
+            {% endif %}
+
+            <button type="button" onclick="document.getElementById('reportModal').style.display='block'" style="padding: 8px 14px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer;">إبلاغ عن المشروع</button>
+        </div>
+    </div>
+
+    <!-- نافذة الإبلاغ -->
+    <div id="reportModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div style="background: white; max-width: 450px; margin: 100px auto; padding: 25px; border-radius: 8px;">
+            <h3>إبلاغ عن مشروع غير لائق</h3>
+            <form method="POST" action="{% url 'report_project' project.id %}">
+                {% csrf_token %}
+                <textarea name="reason" rows="4" required placeholder="يرجى توضيح سبب البلاغ..." style="width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="document.getElementById('reportModal').style.display='none'" style="padding: 8px 14px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">إلغاء</button>
+                    <button type="submit" style="padding: 8px 14px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">إرسال البلاغ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- التعليقات -->
+    <div style="margin-bottom: 40px;">
+        <h3>التعليقات</h3>
+
+        {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'add_comment' project.id %}" style="margin-bottom: 25px;">
+                {% csrf_token %}
+                <textarea name="content" rows="3" placeholder="أضف تعليقك هنا..." required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                <button type="submit" style="margin-top: 8px; padding: 8px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">نشر التعليق</button>
+            </form>
+        {% endif %}
+
+        {% for comment in comments %}
+            <div class="comment-box">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>{{ comment.user.first_name }} {{ comment.user.last_name }}</strong>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <small style="color: #888;">{{ comment.created_at|date:"d M Y" }}</small>
+                        <form method="POST" action="{% url 'report_comment' comment.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="reason" value="تعليق غير لائق أو مسيء">
+                            <button type="submit" style="background: none; border: none; color: #e74c3c; font-size: 11px; cursor: pointer;">إبلاغ</button>
+                        </form>
+                    </div>
+                </div>
+                <p style="margin: 8px 0;">{{ comment.content }}</p>
+
+                <button type="button" onclick="toggleReply('{{ comment.id }}')" style="background: none; border: none; color: #2980b9; font-size: 13px; cursor: pointer;">رد</button>
+
+                <div id="replyForm-{{ comment.id }}" class="reply-form-wrapper">
+                    <form method="POST" action="{% url 'add_comment' project.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                        <textarea name="content" rows="2" placeholder="اكتب ردك..." required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                        <button type="submit" style="padding: 6px 12px; background: #27ae60; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 4px;">إرسال الرد</button>
+                    </form>
+                </div>
+
+                {% for reply in comment.replies.all %}
+                    <div class="reply-box">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>{{ reply.user.first_name }} {{ reply.user.last_name }}</strong>
+                            <small style="color: #888;">{{ reply.created_at|date:"d M Y" }}</small>
+                        </div>
+                        <p style="margin: 4px 0;">{{ reply.content }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p style="color: #888;">لا توجد تعليقات بعد. كن أول من يعلّق!</p>
+        {% endfor %}
+    </div>
+
+    <!-- المشاريع المشابهة -->
+    {% if similar_projects %}
+        <div style="border-top: 2px solid #eee; padding-top: 25px;">
+            <h3>مشاريع مشابهة قد تهمك</h3>
+            <div class="similar-grid">
+                {% for sp in similar_projects %}
+                    <a href="{% url 'project_detail' sp.id %}" class="similar-card">
+                        {% if sp.images.first %}
+                            <img src="{{ sp.images.first.image.url }}" alt="{{ sp.title }}">
+                        {% else %}
+                            <div style="height: 130px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #888;">بدون صورة</div>
+                        {% endif %}
+                        <div style="padding: 12px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ sp.title }}</h4>
+                            <p style="margin: 0; font-size: 12px; color: #27ae60; font-weight: bold;">الهدف: {{ sp.total_target }} ج.م</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const bar = document.getElementById('donationBar');
+        if (bar) {
+            bar.style.width = "{{ project.donation_percentage }}%";
+        }
+    });
+
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slider-img');
+
+    function showSlide(index) {
+        if (!slides.length) return;
+        if (index >= slides.length) slideIndex = 0;
+        else if (index < 0) slideIndex = slides.length - 1;
+        else slideIndex = index;
+
+        slides.forEach(s => s.classList.remove('active'));
+        slides[slideIndex].classList.add('active');
+    }
+
+    function nextSlide() { showSlide(slideIndex + 1); }
+    function prevSlide() { showSlide(slideIndex - 1); }
+
+    function toggleReply(id) {
+        const el = document.getElementById('replyForm-' + id);
+        if (el) {
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+    }
+</script>
+{% endblock %}

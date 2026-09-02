@@ -1,0 +1,135 @@
+{% extends 'donations/base.html' %}
+{% block title %}تسجيل حساب جديد - سند{% endblock %}
+
+{% block content %}
+<style>
+    .auth-card {
+        max-width: 550px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .auth-title {
+        text-align: center;
+        margin-bottom: 24px;
+        color: #2c3e50;
+    }
+    .msg-box {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .msg-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .msg-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="auth-card">
+    <h2 class="auth-title">إنشاء حساب جديد</h2>
+
+    {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div class="msg-box {% if message.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'register' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div style="flex: 1;">
+                <label class="form-label">الاسم الأول</label>
+                <input type="text" name="first_name" required class="form-input">
+            </div>
+            <div style="flex: 1;">
+                <label class="form-label">الاسم الأخير</label>
+                <input type="text" name="last_name" required class="form-input">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" name="email" required class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">رقم الهاتف المصري (010 / 011 / 012 / 015)</label>
+            <input type="text" name="phone" placeholder="010XXXXXXXX" pattern="^01[0125][0-9]{8}$" required class="form-input">
+            <small style="color: #666; font-size: 12px;">يجب أن يكون 11 رقماً ويبدأ بـ 010 أو 011 أو 012 أو 015.</small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">الصورة الشخصية</label>
+            <input type="file" name="profile_picture" accept="image/*" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">كلمة المرور</label>
+            <input type="password" name="password" required class="form-input">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">تأكيد كلمة المرور</label>
+            <input type="password" name="confirm_password" required class="form-input">
+        </div>
+
+        <button type="submit" class="btn-submit">
+            تسجيل الحساب
+        </button>
+    </form>
+
+    <p class="auth-footer">
+        لديك حساب بالفعل؟ <a href="{% url 'login' %}" style="color: #2980b9; font-weight: bold;">تسجيل الدخول</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'donations/base.html' %}
+
+{% block title %}Contact Us - Sanad{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 650px; padding: 60px 24px;">
+    <div class="auth-card-clean" style="max-width: 100%;">
+        <h2 style="font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 8px;">Get in Touch</h2>
+        <p style="color: var(--text-secondary); text-align: center; margin-bottom: 30px;">Have questions? We'd love to hear from you.</p>
+
+        <form>
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" class="form-control" placeholder="Your_name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Your Email</label>
+                <input type="email" class="form-control" placeholder="Your_Email@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea class="form-control" rows="5" placeholder="How can we help you?" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Send Message</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

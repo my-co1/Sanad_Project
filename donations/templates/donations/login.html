@@ -1,0 +1,103 @@
+{% extends 'donations/base.html' %}
+{% block title %}تسجيل الدخول - سند{% endblock %}
+
+{% block content %}
+<style>
+    .auth-card {
+        max-width: 450px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .auth-title {
+        text-align: center;
+        margin-bottom: 24px;
+        color: #2c3e50;
+    }
+    .msg-box {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .msg-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .msg-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background-color: #2980b9;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="auth-card">
+    <h2 class="auth-title">تسجيل الدخول</h2>
+
+    {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div class="msg-box {% if message.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" name="email" required class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">كلمة المرور</label>
+            <input type="password" name="password" required class="form-input">
+        </div>
+
+        <button type="submit" class="btn-submit">
+            دخول
+        </button>
+    </form>
+
+    <p class="auth-footer">
+        ليس لديك حساب؟ <a href="{% url 'register' %}" style="color: #27ae60; font-weight: bold;">إنشاء حساب جديد</a>
+    </p>
+</div>
+{% endblock %}

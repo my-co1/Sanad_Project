@@ -1,0 +1,35 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Donate - {{ project.title }}{% endblock %}
+
+{% block content %}
+<main>
+    <section class="projects-section">
+        <div class="container">
+            <h1>Donate to {{ project.title }}</h1>
+
+            <p>{{ project.details }}</p>
+
+            <p><strong>Target:</strong> {{ project.target }} EGP</p>
+            <p><strong>Collected:</strong> {{ project.collected }} EGP</p>
+
+            <form method="POST" action="{% url 'donate' project.id %}">
+                {% csrf_token %}
+
+                <div>
+                    <label for="donor_name">Your Name</label>
+                    <input type="text" id="donor_name" name="donor_name" required>
+                </div>
+
+                <div>
+                    <label for="amount">Donation Amount</label>
+                    <input type="number" id="amount" name="amount" min="1" step="0.01" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Donate Now</button>
+            </form>
+        </div>
+    </section>
+</main>
+{% endblock %}

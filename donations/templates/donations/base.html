@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sanad - Crowdfunding{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'donations/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+    <div class="container-fluid header-inner">
+        <a href="{% url 'home' %}" class="logo">Sanad</a>
+
+        <nav class="main-nav">
+            <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+            <a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a>
+            <a href="{% url 'home' %}#Projects" class="nav-link">Projects</a>
+            <a href="{% url 'contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+                <svg class="theme-icon icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" fill="currentColor" fill-opacity="0.15"></path></svg>
+                <svg class="theme-icon icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.2"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+            </button>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary">Dashboard</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-primary);">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- Main Body -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="container-fluid footer-inner">
+        <div class="footer-brand">
+            <a href="{% url 'home' %}" class="logo">Sanad</a>
+            <p class="footer-copyright">© 2026 Sanad Venture Capital. All rights reserved. Owner: Myco</p>
+        </div>
+        <div class="footer-links">
+            <a href="#">Facebook</a>
+            <a href="https://github.com/my-co1/">Github</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Floating icon for chatbot --> 
+<div id="ai-chat-icon" onclick="toggleChatWindow()">
+    <i class="fa-solid fa-robot"></i>
+</div>
+
+<!-- Chatbot window -->
+<div id="ai-chat-window" class="chat-window-hidden">
+    <div class="chat-header">
+        <span>Sanad Smart Assistant</span>
+        <button onclick="toggleChatWindow()" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">x</button>
+    </div>
+    <div id="chat-logs">
+        <div class="ai-message">Welcome to the Sanad donation platform! How can I help you today?</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Write your question here...">
+        <button id="send-btn">send</button>
+    </div>
+</div>
+
+
+
+<script src="{% static 'donations/script.js' %}"></script>
+
+<!-- Floating Chatbot Widget -->
+<style>
+    .chat-toggle-btn {
+        position: fixed;
+        bottom: 25px;
+        left: 25px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        z-index: 9999;
+        transition: transform 0.2s;
+    }
+    .chat-toggle-btn:hover {
+        transform: scale(1.08);
+    }
+    .chat-box-card {
+        display: none;
+        position: fixed;
+        bottom: 95px;
+        left: 25px;
+        width: 350px;
+        height: 480px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        z-index: 9999;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .chat-header {
+        background: #27ae60;
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .chat-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #f8fafc;
+        font-size: 14px;
+    }
+    .chat-msg {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        line-height: 1.4;
+    }
+    .bot-msg {
+        background: #e2e8f0;
+        color: #1a202c;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+    .user-msg {
+        background: #27ae60;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+    .chat-input-area {
+        display: flex;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #edf2f7;
+    }
+    .chat-input-area input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        outline: none;
+        font-size: 14px;
+    }
+    .chat-send-btn {
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 15px;
+        margin-right: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
+
+<button class="chat-toggle-btn" id="openChatBtn" title="تحدث مع مساعد سند">💬</button>
+
+<div class="chat-box-card" id="chatBoxCard">
+    <div class="chat-header">
+        <span>🤖 مساعد منصة سند</span>
+        <button class="chat-close-btn" id="closeChatBtn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg bot-msg">
+            أهلاً بك في منصة سند! 👋 كيف يمكنني مساعدتك بخصوص التبرعات أو المشاريع اليوم؟
+        </div>
+    </div>
+    <form class="chat-input-area" id="chatForm">
+        <input type="text" id="chatInput" placeholder="اكتب استفسارك هنا..." autocomplete="off">
+        <button type="submit" class="chat-send-btn">إرسال</button>
+    </form>
+</div>
+
+<script>
+    const chatBtn = document.getElementById('openChatBtn');
+    const chatBox = document.getElementById('chatBoxCard');
+    const closeBtn = document.getElementById('closeChatBtn');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    if (chatBtn && chatBox) {
+        chatBtn.addEventListener('click', () => {
+            chatBox.style.display = (chatBox.style.display === 'flex') ? 'none' : 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            chatBox.style.display = 'none';
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // 1. إظهار رسالة المستخدم
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-msg user-msg';
+            userDiv.textContent = text;
+            chatMessages.appendChild(userDiv);
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 2. مؤشر التحميل
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chat-msg bot-msg';
+            loadingDiv.textContent = 'جاري التفكير...';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 3. إرسال الطلب عبر مسار دجانجو الديناميكي
+            try {
+                const res = await fetch("{% url 'chatbot_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const resData = await res.json();
+                loadingDiv.textContent = resData.reply || 'لم يصل رد من المساعد.';
+            } catch (err) {
+                console.error('Chatbot Error:', err);
+                loadingDiv.textContent = 'تعذر الاتصال بالسيرفر: ' + err.message;
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    }
+</script>
+</body>
+</html>
